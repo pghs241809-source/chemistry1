@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화학식 극성 판별기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .input-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin-bottom: 30px;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 15px 20px;
+        font-size: 1.2em;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+        padding: 15px 40px;
+        font-size: 1.2em;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        font-weight: bold;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    .examples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .example-btn {
+        padding: 8px 15px;
+        background: #f0f0f0;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: all 0.2s ease;
+    }
+
+    .example-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .result-section {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        display: none;
+    }
+
+    .result-section.show {
+        display: block;
+        animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .result-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .molecule-name {
+        font-size: 2em;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .polarity-badge {
+        display: inline-block;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.5em;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .polar {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+    }
+
+    .nonpolar {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+
+    .molecule-display {
+        text-align: center;
+        padding: 40px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        margin: 30px 0;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .atom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-weight: bold;
+        color: white;
+        font-size: 1.2em;
+        margin: 0 5px;
+        position: relative;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .bond {
+        display: inline-block;
+        width: 60px;
+        height: 4px;
+        background: #7f8c8d;
+        vertical-align: middle;
+        margin: 0 -5px;
+    }
+
+    .charge {
+        position: absolute;
+        font-size: 1.2em;
+        font-weight: bold;
+        top: -10px;
+    }
+
+    .positive {
+        color: #e74c3c;
+        right: -15px;
+    }
+
+    .negative {
+        color: #3498db;
+        left: -15px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .info-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        border-left: 5px solid #667eea;
+    }
+
+    .info-card h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+    }
+
+    .info-card ul {
+        list-style-position: inside;
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .info-card li {
+        margin-bottom: 8px;
+    }
+
+    .error-message {
+        background: #ffe6e6;
+        color: #c0392b;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #e74c3c;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .input-group {
+            flex-direction: column;
+        }
+        
+        h1 {
+            font-size: 1.8em;
+        }
+    }
+
+    .atom-color-H { background: #ecf0f1; color: #333; }
+    .atom-color-C { background: #34495e; }
+    .atom-color-N { background: #3498db; }
+    .atom-color-O { background: #e74c3c; }
+    .atom-color-F { background: #16a085; }
+    .atom-color-Cl { background: #27ae60; }
+    .atom-color-Br { background: #d35400; }
+    .atom-color-S { background: #f39c12; }
+    .atom-color-P { background: #8e44ad; }
+
+    .dipole-arrow {
+        display: inline-block;
+        margin: 20px auto;
+        text-align: center;
+        font-size: 2em;
+        color: #3498db;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <h1>⚛️ 화학식 극성 판별기 ⚛️</h1>
+
+```
+    <div class="input-section">
+        <h2 style="margin-bottom: 20px; color: #333;">화학식을 입력하세요</h2>
+        <div class="input-group">
+            <input type="text" id="formulaInput" placeholder="예: H2O, CO2, NH3, CH4..." />
+            <button onclick="analyzeMolecule()">분석하기</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <p style="color: #666; margin-bottom: 10px;">빠른 예시:</p>
+            <div class="examples">
+                <button class="example-btn" onclick="setFormula('H2O')">H₂O (물)</button>
+                <button class="example-btn" onclick="setFormula('CO2')">CO₂</button>
+                <button class="example-btn" onclick="setFormula('NH3')">NH₃</button>
+                <button class="example-btn" onclick="setFormula('CH4')">CH₄</button>
+                <button class="example-btn" onclick="setFormula('HCl')">HCl</button>
+                <button class="example-btn" onclick="setFormula('O2')">O₂</button>
+                <button class="example-btn" onclick="setFormula('CCl4')">CCl₄</button>
+                <button class="example-btn" onclick="setFormula('H2S')">H₂S</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="result-section" id="resultSection">
+        <div class="result-header">
+            <div class="molecule-name" id="moleculeName"></div>
+            <div class="polarity-badge" id="polarityBadge"></div>
+        </div>
+        
+        <div class="molecule-display" id="moleculeDisplay"></div>
+        
+        <div class="info-grid" id="infoGrid"></div>
+    </div>
+</div>
+
+<script>
+    const moleculeDatabase = {
+        'H2O': {
+            name: '물 (Water)',
+            korean: '물',
+            polar: true,
+            structure: 'bent',
+            geometry: '굽은형',
+            dipole: true,
+            reasons: [
+                '산소와 수소 간 전기음성도 차이가 큼 (3.44 vs 2.20)',
+                '굽은 분자 구조로 쌍극자 모멘트가 상쇄되지 않음',
+                '산소 원자에 비공유 전자쌍 2개 존재'
+            ],
+            properties: [
+                '끓는점: 100°C',
+                '뛰어난 용매 (극성 물질 용해)',
+                '수소 결합 형성',
+                '높은 표면장력'
+            ],
+            visualization: '<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;"><div class="atom atom-color-O">O<span class="charge negative">δ-</span></div><div style="display: flex; gap: 40px;"><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div></div></div><div class="dipole-arrow">⬆️ 쌍극자 모멘트</div>'
+        },
+        'CO2': {
+            name: '이산화탄소 (Carbon Dioxide)',
+            korean: '이산화탄소',
+            polar: false,
+            structure: 'linear',
+            geometry: '선형',
+            dipole: false,
+            reasons: [
+                '선형 구조로 대칭적',
+                '양쪽의 C=O 결합 쌍극자가 정반대 방향',
+                '쌍극자 모멘트가 완전히 상쇄됨'
+            ],
+            properties: [
+                '승화점: -78.5°C',
+                '물에 약간 녹음',
+                '온실가스',
+                '드라이아이스의 주성분'
+            ],
+            visualization: '<div style="display: flex; align-items: center;"><div class="atom atom-color-O">O</div><div class="bond" style="width: 80px;"></div><div class="atom atom-color-C">C</div><div class="bond" style="width: 80px;"></div><div class="atom atom-color-O">O</div></div><div style="margin-top: 20px; color: #666;">← 쌍극자 상쇄 →</div>'
+        },
+        'NH3': {
+            name: '암모니아 (Ammonia)',
+            korean: '암모니아',
+            polar: true,
+            structure: 'pyramidal',
+            geometry: '삼각뿔형',
+            dipole: true,
+            reasons: [
+                '질소와 수소 간 전기음성도 차이 (3.04 vs 2.20)',
+                '삼각뿔형 구조로 비대칭적',
+                '질소 원자에 비공유 전자쌍 1개 존재'
+            ],
+            properties: [
+                '끓는점: -33°C',
+                '자극적인 냄새',
+                '염기성 물질',
+                '비료 제조에 사용'
+            ],
+            visualization: '<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;"><div class="atom atom-color-N">N<span class="charge negative">δ-</span></div><div style="display: flex; gap: 20px;"><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div></div></div><div class="dipole-arrow">⬆️ 쌍극자 모멘트</div>'
+        },
+        'CH4': {
+            name: '메테인 (Methane)',
+            korean: '메테인',
+            polar: false,
+            structure: 'tetrahedral',
+            geometry: '정사면체',
+            dipole: false,
+            reasons: [
+                '정사면체 구조로 완벽히 대칭적',
+                'C-H 결합의 극성이 매우 약함',
+                '모든 쌍극자가 상쇄됨'
+            ],
+            properties: [
+                '끓는점: -161°C',
+                '천연가스의 주성분',
+                '무색, 무취의 기체',
+                '온실가스'
+            ],
+            visualization: '<div style="display: flex; flex-direction: column; align-items: center; gap: 15px;"><div style="display: flex; gap: 20px;"><div class="atom atom-color-H">H</div><div class="atom atom-color-H">H</div></div><div class="atom atom-color-C">C</div><div style="display: flex; gap: 20px;"><div class="atom atom-color-H">H</div><div class="atom atom-color-H">H</div></div></div><div style="margin-top: 20px; color: #666;">정사면체 구조 (대칭)</div>'
+        },
+        'HCl': {
+            name: '염화수소 (Hydrogen Chloride)',
+            korean: '염화수소',
+            polar: true,
+            structure: 'linear',
+            geometry: '선형',
+            dipole: true,
+            reasons: [
+                '염소와 수소 간 전기음성도 차이가 매우 큼 (3.16 vs 2.20)',
+                '이원자 분자로 쌍극자 상쇄 불가',
+                '강한 극성 공유결합'
+            ],
+            properties: [
+                '끓는점: -85°C',
+                '물에 녹으면 염산(HCl(aq)) 형성',
+                '자극적이고 부식성 있는 기체',
+                '강산의 일종'
+            ],
+            visualization: '<div style="display: flex; align-items: center; gap: 10px;"><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div><div class="bond" style="width: 100px;"><div style="position: absolute; width: 0; height: 0; border-left: 15px solid #3498db; border-top: 8px solid transparent; border-bottom: 8px solid transparent; right: -15px; top: -6px;"></div></div><div class="atom atom-color-Cl">Cl<span class="charge negative">δ-</span></div></div><div class="dipole-arrow">→ 쌍극자 모멘트</div>'
+        },
+        'O2': {
+            name: '산소 (Oxygen)',
+            korean: '산소',
+            polar: false,
+            structure: 'linear',
+            geometry: '선형',
+            dipole: false,
+            reasons: [
+                '동일한 원자로 구성된 이원자 분자',
+                '전기음성도 차이가 0',
+                '전하 분포가 균일함'
+            ],
+            properties: [
+                '끓는점: -183°C',
+                '생명 유지에 필수적',
+                '무색, 무취의 기체',
+                '조연성 기체'
+            ],
+            visualization: '<div style="display: flex; align-items: center;"><div class="atom atom-color-O">O</div><div class="bond" style="width: 100px;"></div><div class="atom atom-color-O">O</div></div><div style="margin-top: 20px; color: #666;">동일 원자 결합 (무극성)</div>'
+        },
+        'CCl4': {
+            name: '사염화탄소 (Carbon Tetrachloride)',
+            korean: '사염화탄소',
+            polar: false,
+            structure: 'tetrahedral',
+            geometry: '정사면체',
+            dipole: false,
+            reasons: [
+                '정사면체 구조로 완벽히 대칭적',
+                'C-Cl 결합은 극성이지만 방향이 상쇄됨',
+                '모든 쌍극자 모멘트가 0이 됨'
+            ],
+            properties: [
+                '끓는점: 76.7°C',
+                '과거 소화기와 세정제로 사용',
+                '독성이 강함',
+                '오존층 파괴 물질'
+            ],
+            visualization: '<div style="display: flex; flex-direction: column; align-items: center; gap: 15px;"><div style="display: flex; gap: 20px;"><div class="atom atom-color-Cl">Cl</div><div class="atom atom-color-Cl">Cl</div></div><div class="atom atom-color-C">C</div><div style="display: flex; gap: 20px;"><div class="atom atom-color-Cl">Cl</div><div class="atom atom-color-Cl">Cl</div></div></div><div style="margin-top: 20px; color: #666;">정사면체 구조 (대칭)</div>'
+        },
+        'H2S': {
+            name: '황화수소 (Hydrogen Sulfide)',
+            korean: '황화수소',
+            polar: true,
+            structure: 'bent',
+            geometry: '굽은형',
+            dipole: true,
+            reasons: [
+                '황과 수소 간 전기음성도 차이 (2.58 vs 2.20)',
+                '굽은 분자 구조',
+                '황 원자에 비공유 전자쌍 2개 존재'
+            ],
+            properties: [
+                '끓는점: -60°C',
+                '썩은 달걀 냄새',
+                '독성이 강함',
+                '화산 가스의 성분'
+            ],
+            visualization: '<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;"><div class="atom atom-color-S">S<span class="charge negative">δ-</span></div><div style="display: flex; gap: 40px;"><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div></div></div><div class="dipole-arrow">⬆️ 쌍극자 모멘트</div>'
+        },
+        'N2': {
+            name: '질소 (Nitrogen)',
+            korean: '질소',
+            polar: false,
+            structure: 'linear',
+            geometry: '선형',
+            dipole: false,
+            reasons: [
+                '동일한 원자로 구성된 이원자 분자',
+                '전기음성도 차이가 0',
+                '전하 분포가 균일함'
+            ],
+            properties: [
+                '끓는점: -196°C',
+                '공기의 78% 차지',
+                '무색, 무취의 기체',
+                '비활성 기체'
+            ],
+            visualization: '<div style="display: flex; align-items: center;"><div class="atom atom-color-N">N</div><div class="bond" style="width: 100px;"></div><div class="atom atom-color-N">N</div></div><div style="margin-top: 20px; color: #666;">동일 원자 결합 (무극성)</div>'
+        },
+        'CH3OH': {
+            name: '메탄올 (Methanol)',
+            korean: '메탄올',
+            polar: true,
+            structure: 'bent at O',
+            geometry: 'OH기가 있는 구조',
+            dipole: true,
+            reasons: [
+                'O-H 결합의 큰 전기음성도 차이',
+                '비대칭 구조',
+                '하이드록시기(-OH)의 극성'
+            ],
+            properties: [
+                '끓는점: 64.7°C',
+                '알코올의 일종',
+                '독성이 있음',
+                '연료로 사용'
+            ],
+            visualization: '<div style="display: flex; align-items: center; gap: 10px;"><div class="atom atom-color-C">C</div><div class="bond" style="width: 60px;"></div><div class="atom atom-color-O">O<span class="charge negative">δ-</span></div><div class="bond" style="width: 60px;"></div><div class="atom atom-color-H">H<span class="charge positive">δ+</span></div></div><div class="dipole-arrow">→ 쌍극자 모멘트</div>'
+        }
+    };
+
+    function setFormula(formula) {
+        document.getElementById('formulaInput').value = formula;
+        analyzeMolecule();
+    }
+
+    function analyzeMolecule() {
+        const input = document.getElementById('formulaInput').value.trim().toUpperCase();
+        const resultSection = document.getElementById('resultSection');
+        
+        if (!input) {
+            alert('화학식을 입력해주세요!');
+            return;
+        }
+
+        const molecule = moleculeDatabase[input];
+        
+        if (molecule) {
+            displayResult(molecule, input);
+            resultSection.classList.add('show');
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            displayError(input);
+            resultSection.classList.add('show');
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function displayResult(molecule, formula) {
+        document.getElementById('moleculeName').textContent = molecule.name;
+        
+        const badge = document.getElementById('polarityBadge');
+        badge.textContent = molecule.polar ? '🔵 극성 분자' : '🔴 무극성 분자';
+        badge.className = 'polarity-badge ' + (molecule.polar ? 'polar' : 'nonpolar');
+        
+        document.getElementById('moleculeDisplay').innerHTML = molecule.visualization;
+        
+        const infoGrid = document.getElementById('infoGrid');
+        infoGrid.innerHTML = `
+            <div class="info-card">
+                <h3>🔍 극성 판단 이유</h3>
+                <ul>
+                    ${molecule.reasons.map(reason => `<li>${reason}</li>`).join('')}
+                </ul>
+                <p style="margin-top: 15px; color: #555;">
+                    <strong>분자 구조:</strong> ${molecule.geometry}
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>📊 물리/화학적 성질</h3>
+                <ul>
+                    ${molecule.properties.map(prop => `<li>${prop}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    function displayError(formula) {
+        document.getElementById('moleculeName').textContent = formula;
+        document.getElementById('polarityBadge').textContent = '❓ 정보 없음';
+        document.getElementById('polarityBadge').className = 'polarity-badge';
+        document.getElementById('polarityBadge').style.background = '#95a5a6';
+        
+        document.getElementById('moleculeDisplay').innerHTML = `
+            <div class="error-message">
+                <h3 style="margin-bottom: 15px;">😕 죄송합니다!</h3>
+                <p><strong>"${formula}"</strong>에 대한 정보가 데이터베이스에 없습니다.</p>
+                <p style="margin-top: 10px;">지원되는 화학식: H2O, CO2, NH3, CH4, HCl, O2, N2, CCl4, H2S, CH3OH</p>
+            </div>
+        `;
+        
+        document.getElementById('infoGrid').innerHTML = '';
+    }
+
+    // Enter 키 입력 처리
+    document.getElementById('formulaInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            analyzeMolecule();
+        }
+    });
+</script>
+```
+
+</body>
+</html>
